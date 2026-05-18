@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: dentist-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/dentist_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ""
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      # Controla la creación automática de tablas en MySQL:
+      # 'update': Actualiza la base de datos según tus clases Java sin borrar los datos existentes.
+      # 'create-drop': Borra y recrea las tablas cada vez que inicias la app (ideal para pruebas).
+      ddl-auto: update
