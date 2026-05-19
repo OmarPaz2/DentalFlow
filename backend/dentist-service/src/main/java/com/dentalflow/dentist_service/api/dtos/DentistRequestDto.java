@@ -13,6 +13,8 @@ public record DentistRequestDto (
         @Size(max = 50, message = "El telefono debe tener menos de 20 digitos.")
         String telefono,
         @NotNull(message = "La especialidad es requerida.")
-        Long idEspecialidad
+        Long idEspecialidad,
+        @NotNull(message = " es requerida.")
+        Long idUsuario
 ){
 }
