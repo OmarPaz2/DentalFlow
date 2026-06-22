@@ -24,6 +24,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void register(RegisterRequestDto request) {
+        System.out.println("paswword enviado; "+request.password());
         if (userRepository.existsByUsername(request.username())) {
             throw new UserAlreadyExistsException(request.username());
         }

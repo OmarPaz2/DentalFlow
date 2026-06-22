@@ -45,7 +45,7 @@ public class TreatmentController {
 
     /**
      * Consumido via Feign por payment-service antes de registrar un pago
-     * asociado a un tratamiento (ver client/TreatmentClient en payment-service).
+     * asociado a un tratamiento.
      */
     @GetMapping("/{id}/cost-summary")
     public TreatmentCostSummaryDto getCostSummary(@PathVariable Integer id) {

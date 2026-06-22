@@ -19,11 +19,12 @@ public class RsaKeyLoader {
 
     public PrivateKey loadPrivateKey() throws Exception {
         try (var inputStream = resourceLoader.getResource(properties.privateKeyPath()).getInputStream()) {
-            String key = new String(inputStream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            String key = new String(inputStream.readAllBytes());
 
             key = key.replaceAll("-----BEGIN[^-\\r\\n]*-----", "")
                     .replaceAll("-----END[^-\\r\\n]*-----", "")
                     .replaceAll("\\s", "")
+                    .replaceAll("[^a-zA-Z0-9+/=]", "")
                     .trim();
 
             byte[] decoded = java.util.Base64.getDecoder().decode(key);
@@ -34,12 +35,13 @@ public class RsaKeyLoader {
     }
 
     public PublicKey loadPublicKey() throws Exception {
-        try (var inputStream = resourceLoader.getResource(properties.privateKeyPath()).getInputStream()) {
-            String key = new String(inputStream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        try (var inputStream = resourceLoader.getResource(properties.publicKeyPath()).getInputStream()) {
+            String key = new String(inputStream.readAllBytes());
 
             key = key.replaceAll("-----BEGIN[^-\\r\\n]*-----", "")
                     .replaceAll("-----END[^-\\r\\n]*-----", "")
                     .replaceAll("\\s", "")
+                    .replaceAll("[^a-zA-Z0-9+/=]", "")
                     .trim();
 
             byte[] decoded = java.util.Base64.getDecoder().decode(key);
