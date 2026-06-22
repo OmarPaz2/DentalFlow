@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/backend/appointment-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/auth-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/dashboard-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/dentist-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/eureka-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/material-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/patient-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/payment-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/specialty-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/treatment-service/src/main/java" charset="UTF-8" />
+  </component>
+</project>

@@ -1,0 +1,268 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dentalflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: sql
+      POSTGRES_DB: dentalflow
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d dentalflow" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dentalflow-net
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: dentalflow-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dentalflow-net
+
+  eureka-server:
+    build: ./backend/eureka-server
+    container_name: dentalflow-eureka-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dentalflow-net
+
+  auth-service:
+    build: ./backend/auth-service
+    container_name: dentalflow-auth-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+    ports:
+      - "8081:8081"
+    networks:
+      - dentalflow-net
+
+  patient-service:
+    build: ./backend/patient-service
+    container_name: dentalflow-patient-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8082:8082"
+    networks:
+      - dentalflow-net
+
+  specialty-service:
+    build: ./backend/specialty-service
+    container_name: dentalflow-specialty-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8083:8083"
+    networks:
+      - dentalflow-net
+
+  material-service:
+    build: ./backend/material-service
+    container_name: dentalflow-material-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8084:8084"
+    networks:
+      - dentalflow-net
+
+  dentist-service:
+    build: ./backend/dentist-service
+    container_name: dentalflow-dentist-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      specialty-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8085
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8085:8085"
+    networks:
+      - dentalflow-net
+
+  appointment-service:
+    build: ./backend/appointment-service
+    container_name: dentalflow-appointment-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8086
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      SPRING_RABBITMQ_HOST: rabbitmq
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8086:8086"
+    networks:
+      - dentalflow-net
+
+  treatment-service:
+    build: ./backend/treatment-service
+    container_name: dentalflow-treatment-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8087
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      SPRING_RABBITMQ_HOST: rabbitmq
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8087:8087"
+    networks:
+      - dentalflow-net
+
+  payment-service:
+    build: ./backend/payment-service
+    container_name: dentalflow-payment-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8088
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      SPRING_RABBITMQ_HOST: rabbitmq
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8088:8088"
+    networks:
+      - dentalflow-net
+
+  dashboard-service:
+    build: ./backend/dashboard-service
+    container_name: dentalflow-dashboard-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8089
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dentalflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: sql
+      SPRING_RABBITMQ_HOST: rabbitmq
+      EUREKA_URI: http://eureka-server:8761/eureka/
+    ports:
+      - "8089:8089"
+    networks:
+      - dentalflow-net
+
+  gateway:
+    build: ./backend/gateway
+    container_name: dentalflow-gateway
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8080
+      EUREKA_URI: http://eureka-server:8761/eureka/
+      AUTH_SERVICE_URI: http://auth-service:8081
+      AUTH_JWK_SET_URI: http://auth-service:8081/api/auth/.well-known/jwks.json
+    ports:
+      - "8080:8080"
+    networks:
+      - dentalflow-net
+
+networks:
+  dentalflow-net:
+    driver: bridge
+
+volumes:
+  postgres-data:

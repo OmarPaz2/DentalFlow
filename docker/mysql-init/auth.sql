@@ -1,0 +1,20 @@
+CREATE DATABASE auth_db;
+USE auth_db;
+
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    username VARCHAR(50) NOT NULL UNIQUE,
+
+    password VARCHAR(255) NOT NULL,
+
+    role ENUM(
+        'ADMIN',
+        'RECEPCIONISTA',
+        'ODONTOLOGO'
+    ) NOT NULL,
+
+    active BOOLEAN DEFAULT TRUE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

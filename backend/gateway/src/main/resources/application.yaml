@@ -1,0 +1,136 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: gateway
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${AUTH_JWK_SET_URI:http://localhost:8081/api/auth/.well-known/jwks.json}
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+          routes:
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/auth/**
+
+            - id: patient-service
+              uri: lb://patient-service
+              predicates:
+                - Path=/api/v1/patients/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: patientServiceCB
+                    fallbackUri: forward:/fallback
+
+            - id: dentist-service
+              uri: lb://dentist-service
+              predicates:
+                - Path=/api/v1/dentists/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: dentistServiceCB
+                    fallbackUri: forward:/fallback
+
+            - id: specialty-service
+              uri: lb://specialty-service
+              predicates:
+                - Path=/api/v1/specialties/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: specialtyServiceCB
+                    fallbackUri: forward:/fallback
+
+            - id: appointment-service
+              uri: lb://appointment-service
+              predicates:
+                - Path=/api/v1/appointments/**,/api/v1/appointment-types/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: appointmentServiceCB
+                    fallbackUri: forward:/fallback
+
+            - id: treatment-service
+              uri: lb://treatment-service
+              predicates:
+                - Path=/api/v1/treatments/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: treatmentServiceCB
+                    fallbackUri: forward:/fallback
+
+            - id: payment-service
+              uri: lb://payment-service
+              predicates:
+                - Path=/api/v1/payments/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: paymentServiceCB
+                    fallbackUri: forward:/fallback
+
+            - id: material-service
+              uri: lb://material-service
+              predicates:
+                - Path=/api/v1/materials/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: materialServiceCB
+                    fallbackUri: forward:/fallback
+
+            - id: dashboard-service
+              uri: lb://dashboard-service
+              predicates:
+                - Path=/api/v1/dashboard/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: dashboardServiceCB
+                    fallbackUri: forward:/fallback
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
